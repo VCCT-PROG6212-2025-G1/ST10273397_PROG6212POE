@@ -18,16 +18,16 @@ namespace PROG6212POE_Testing
     [TestClass]
     public class ControllersTests
     {
-        private ApplicationDbContext _context;
+        private AppDbContext _context;
 
         [TestInitialize]
         public void Setup()
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            var options = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
-            _context = new ApplicationDbContext(options);
+            _context = new AppDbContext(options);
         }
 
         #region LoginController Tests

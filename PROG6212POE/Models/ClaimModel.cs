@@ -12,10 +12,10 @@ namespace PROG6212POE.Models
         public string Title { get; set; }
 
         [Required]
-        public float HoursWorked { get; set; }
+        public int HoursWorked { get; set; }
 
         [Required]
-        public int HourlyRate { get; set; }
+        public float HourlyRate { get; set; }
 
         [NotMapped]
         public float TotalAmount => HoursWorked * HourlyRate;
@@ -30,7 +30,7 @@ namespace PROG6212POE.Models
         public ClaimModel() 
         { }
 
-        public ClaimModel(int id, string title, float hrsWorked, int hrlyRate, string status, string addNotes, string suppDocName, string suppDocPath) 
+        public ClaimModel(int id, string title, int hrsWorked, float hrlyRate, string status, string addNotes, string suppDocName, string suppDocPath) 
         { 
             ClaimId = id; 
             Title = title;

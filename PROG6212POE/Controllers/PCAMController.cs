@@ -6,10 +6,10 @@ namespace PROG6212POE.Controllers
 {
     public class PCAMController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
         // Constructor: injects the database context
-        public PCAMController(ApplicationDbContext context)
+        public PCAMController(AppDbContext context)
         {
             _context = context;
         }

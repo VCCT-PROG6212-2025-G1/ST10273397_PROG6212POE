@@ -6,10 +6,10 @@ namespace PROG6212POE.Controllers
 {
     public class LecturerController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
         // Constructor injects the database context
-        public LecturerController(ApplicationDbContext context)
+        public LecturerController(AppDbContext context)
         {
             _context = context;
         }

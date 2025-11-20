@@ -54,6 +54,7 @@ public class LoginController : Controller
         }
 
         // If none of the credentials match, reload login page
+        ModelState.AddModelError("", "Invalid Email and Password");
         return RedirectToAction("Login");
     }
 }
