@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36408.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PROG6212POE", "PROG6212POE.csproj", "{82D225A2-8831-4B63-89BD-43D28C11055B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PROG6212POE Testing", "..\PROG3212POE Testing\PROG6212POE Testing.csproj", "{2BECF0A8-6919-4E95-B4A5-7F70EB1E2D8C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82D225A2-8831-4B63-89BD-43D28C11055B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82D225A2-8831-4B63-89BD-43D28C11055B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82D225A2-8831-4B63-89BD-43D28C11055B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82D225A2-8831-4B63-89BD-43D28C11055B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BECF0A8-6919-4E95-B4A5-7F70EB1E2D8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BECF0A8-6919-4E95-B4A5-7F70EB1E2D8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BECF0A8-6919-4E95-B4A5-7F70EB1E2D8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BECF0A8-6919-4E95-B4A5-7F70EB1E2D8C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1AEA4757-100B-40A3-B094-7A04ED76B7CE}
+	EndGlobalSection
+EndGlobal

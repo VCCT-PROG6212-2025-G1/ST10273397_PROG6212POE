@@ -1,0 +1,128 @@
+﻿@model PROG6212POE.Models.ClaimModel
+<!-- This line specifies the model type used by this view.
+     The view will be strongly typed to ClaimModel, so you can use
+     model properties in form fields, validation, etc. -->
+@{
+    ViewData["Title"] = "Submit Claim"; // Sets the page title
+}
+
+<!-- Main container for the form -->
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-3 border-0">
+        <div class="card-body">
+            <!-- Page heading -->
+            <h2 class="text-primary text-center mb-3 fw-bold">Submit a New Claim</h2>
+            <p class="text-muted text-center mb-4">
+                Fill out the form below to submit your claim for review.
+            </p>
+
+            <!-- Form starts here -->
+            <form asp-action="SubmitClaim" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- Displays any model-level validation errors -->
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <!-- Claim Title input -->
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label fw-bold">Claim Title</label>
+                    <input asp-for="Title" class="form-control shadow-sm" placeholder="e.g. Exam Marking Hours" required />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+
+                <!-- Hours Worked input -->
+                <div class="mb-3">
+                    <label asp-for="HoursWorked" class="form-label fw-bold">Hours Worked</label>
+                    <input asp-for="HoursWorked" type="number" step="0.1" class="form-control shadow-sm" placeholder="e.g. 12.5" required />
+                    <span asp-validation-for="HoursWorked" class="text-danger small"></span>
+                </div>
+
+                <!-- Hourly Rate input -->
+                <div class="mb-3">
+                    <label asp-for="HourlyRate" class="form-label fw-bold">Hourly Rate (R)</label>
+                    <input asp-for="HourlyRate" type="number" class="form-control shadow-sm" placeholder="e.g. 150" required />
+                    <span asp-validation-for="HourlyRate" class="text-danger small"></span>
+                </div>
+
+                <!-- Total Amount (calculated automatically, read-only) -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Total Amount (R)</label>
+                    <input type="text" id="TotalAmount" class="form-control shadow-sm bg-light" readonly />
+                </div>
+
+                <!-- Additional Notes textarea -->
+                <div class="mb-3">
+                    <label asp-for="AdditionalNotes" class="form-label fw-bold">Additional Notes</label>
+                    <textarea asp-for="AdditionalNotes" class="form-control shadow-sm" rows="3" placeholder="Provide any relevant details (optional)..."></textarea>
+                    <span asp-validation-for="AdditionalNotes" class="text-danger small"></span>
+                </div>
+
+                <!-- File upload input for supplementary document -->
+                <div class="mb-4">
+                    <label asp-for="SuppDocName" class="form-label fw-bold">Upload Supplementary Document</label>
+                    <input asp-for="SuppDocName" type="file" class="form-control shadow-sm" accept=".pdf" />
+                    <div class="invalid-feedback">
+                        File must be a PDF and under 10 MB.
+                    </div>
+                    <small class="text-muted">Only PDF files under 10 MB are allowed.</small>
+                </div>
+
+                <!-- Form action buttons -->
+                <div class="d-flex justify-content-between">
+                    <!-- Back to Overview button -->
+                    <a asp-action="Overview" class="btn btn-outline-secondary shadow-sm">
+                        <i class="bi bi-arrow-left-circle me-1"></i> Back to Overview
+                    </a>
+                    <!-- Submit Claim button -->
+                    <button type="submit" class="btn btn-primary shadow-sm">
+                        <i class="bi bi-check-circle me-1"></i> Submit Claim
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial"); // Loads jQuery validation scripts
+    }
+
+    <script>
+        // Automatically calculates Total Amount whenever HoursWorked or HourlyRate changes
+        document.addEventListener('input', function () {
+            const hours = parseFloat(document.querySelector('[name="HoursWorked"]').value) || 0;
+            const rate = parseFloat(document.querySelector('[name="HourlyRate"]').value) || 0;
+            const total = (hours * rate).toFixed(2); // Multiply and format to 2 decimals
+            document.getElementById('TotalAmount').value = total;
+        });
+
+        // Bootstrap custom validation
+        (function () {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', function (event) {
+                    const fileInput = form.querySelector('[name="SuppDoc"]');
+                    const file = fileInput.files[0];
+                    const maxSize = 10 * 1024 * 1024; // 10 MB
+
+                    // Validate file if uploaded
+                    if (file) {
+                        if (file.type !== "application/pdf" || file.size > maxSize) {
+                            fileInput.classList.add('is-invalid');
+                        } else {
+                            fileInput.classList.remove('is-invalid');
+                        }
+                    }
+
+                    // Prevent form submission if invalid
+                    if (!form.checkValidity() || fileInput.classList.contains('is-invalid')) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+
+                    form.classList.add('was-validated'); // Mark form as validated for Bootstrap
+                }, false);
+            });
+        })();
+    </script>
+}

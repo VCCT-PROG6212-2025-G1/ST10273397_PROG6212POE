@@ -1,0 +1,97 @@
+﻿@model IEnumerable<PROG6212POE.Models.ClaimModel>
+
+
+@{
+    ViewData["Title"] = "Claims Overview"; // Sets the page title
+}
+
+<!-- Main container -->
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-3 border-0">
+        <div class="card-body">
+            <!-- Page heading -->
+            <h2 class="text-primary text-center mb-3 fw-bold">My Claims Overview</h2>
+            <p class="text-muted text-center mb-4">
+                Below is a summary of the claims you have submitted and their current status.
+            </p>
+
+            <!-- Top section with title and Submit Claim button -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Submitted Claims</h5>
+                <a asp-action="SubmitClaim" class="btn btn-sm btn-primary shadow-sm">
+                    <i class="bi bi-plus-circle me-1"></i> Submit New Claim
+                </a>
+            </div>
+
+            <!-- Table container for responsive layout -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-primary text-center">
+                        <tr>
+                            <th>Status</th>
+                            <th>ID</th>
+                            <!-- DisplayNameFor generates a user-friendly column name from the model property -->
+                            <th>@Html.DisplayNameFor(model => model.First().Title)</th>
+                            <th>Hours Worked</th>
+                            <th>Hourly Rate</th>
+                            <th>Total Amount</th>
+                            <th>Additional Notes</th>
+                            <th>Supplementary Document</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        @if (!Model.Any())
+                        {
+                            <!-- Show message when no claims exist -->
+                            <tr>
+                                <td colspan="8" class="text-muted fst-italic">
+                                    No claims have been submitted yet.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <!-- Loop through each claim in the model collection -->
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <!-- Display claim status with colored badges -->
+                                        @if (item.ClaimStatus == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark px-3 py-2">@item.ClaimStatus</span>
+                                        }
+                                        else if (item.ClaimStatus == "Verified")
+                                        {
+                                            <span class="badge bg-primary px-3 py-2">@item.ClaimStatus</span>
+                                        }
+                                        else if (item.ClaimStatus == "Approved")
+                                        {
+                                            <span class="badge bg-success px-3 py-2">@item.ClaimStatus</span>
+                                        }
+                                        else if (item.ClaimStatus == "Rejected")
+                                        {
+                                            <span class="badge bg-danger px-3 py-2">@item.ClaimStatus</span>
+                                        }
+                                    </td>
+                                    <td>@item.ClaimId</td> <!-- Claim unique ID -->
+                                    <td>@item.Title</td> <!-- Claim title -->
+                                    <td>@item.HoursWorked</td> <!-- Hours worked -->
+                                    <td>R @item.HourlyRate</td> <!-- Hourly rate with currency symbol -->
+                                    <td>R @(item.TotalAmount)</td> <!-- Calculated total amount -->
+                                    <td>@item.AdditionalNotes</td> <!-- Any extra notes -->
+                                    <td>
+                                        <!-- Link to download the supplementary document -->
+                                        <a href="~/uploads/@item.SuppDocPath" download="@item.SuppDocName">
+                                            @item.SuppDocName
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

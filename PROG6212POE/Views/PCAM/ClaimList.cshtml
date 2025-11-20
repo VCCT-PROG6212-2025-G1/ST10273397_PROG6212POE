@@ -1,0 +1,157 @@
+﻿@model IEnumerable<PROG6212POE.Models.ClaimModel>
+// The view is strongly typed to a collection of ClaimModel objects.
+// Each row in the table corresponds to one claim submitted by lecturers.
+
+@{
+    ViewData["Title"] = "Claim List"; // Page title
+
+    // Determine the user's role from ViewBag to display in the heading
+    string user;
+    @if (ViewBag.UserRole == "ProgrammeCoordinator")
+    {
+        user = "Programme Coordinator";
+    }
+    else
+    {
+        user = "Academic Manager";
+    }
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg rounded-3 border-0">
+        <div class="card-body">
+            <!-- Heading and description -->
+            <h2 class="text-primary text-center mb-3 fw-bold">Claims Review Dashboard</h2>
+            <p class="text-muted text-center mb-4">
+                As a <strong>@user</strong>, you can review, verify, and approve or reject lecturer claims below.
+            </p>
+
+            <!-- Table container -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-primary text-center">
+                        <tr>
+                            <th>ID</th>
+                            <th>@Html.DisplayNameFor(model => model.Title)</th>
+                            <th>Hours Worked For The Week</th>
+                            <th>Hourly Rate</th>
+                            <th>Total Amount</th>
+                            <th>Additional Notes</th>
+                            <th>Supplement Document</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        <!-- Loop through each claim -->
+                        @foreach (var claim in Model)
+                        {
+                            <tr>
+                                <td>@claim.ClaimId</td>
+                                <td>@claim.Title</td>
+                                <td>@claim.HoursWorked</td>
+                                <td>R @claim.HourlyRate</td>
+                                <td>R @claim.TotalAmount.ToString()</td>
+                                <td>@claim.AdditionalNotes</td>
+                                <td>
+                                    <!-- Link to download the uploaded document -->
+                                    <a href="~/uploads/@claim.SuppDocPath" download="@claim.SuppDocName">
+                                        @claim.SuppDocName
+                                    </a>
+                                </td>
+                                <td>
+                                    <!-- Status badges with color coding -->
+                                    @if (claim.ClaimStatus == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark px-3 py-2">Pending</span>
+                                    }
+                                    else if (claim.ClaimStatus == "Verified")
+                                    {
+                                        <span class="badge bg-primary px-3 py-2">Verified</span>
+                                    }
+                                    else if (claim.ClaimStatus == "Approved")
+                                    {
+                                        <span class="badge bg-success px-3 py-2">Approved</span>
+                                    }
+                                    else if (claim.ClaimStatus == "Rejected")
+                                    {
+                                        <span class="badge bg-danger px-3 py-2">Rejected</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <!-- Actions column: buttons depend on role and claim status -->
+                                    @if (ViewBag.UserRole == "ProgrammeCoordinator" && claim.ClaimStatus == "Pending")
+                                    {
+                                        <div class="btn-group">
+                                            <!-- Verify button -->
+                                            <form asp-action="VerifyClaim" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@claim.ClaimId" />
+                                                <button type="submit" class="btn btn-success btn-sm px-3">Verify</button>
+                                            </form>
+                                            <!-- Reject button -->
+                                            <form asp-action="RejectClaim" method="post" class="d-inline">
+                                                <input type="hidden" name="id" value="@claim.ClaimId" />
+                                                <button type="submit" class="btn btn-danger btn-sm px-3">Reject</button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else if (ViewBag.UserRole == "AcademicManager")
+                                    {
+                                        if (claim.ClaimStatus == "Verified")
+                                        {
+                                            <div class="btn-group">
+                                                <!-- Approve button -->
+                                                <form asp-action="ApproveClaim" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@claim.ClaimId" />
+                                                    <button type="submit" class="btn btn-success btn-sm px-3">Approve</button>
+                                                </form>
+                                                <!-- Reject button -->
+                                                <form asp-action="RejectClaim" method="post" class="d-inline">
+                                                    <input type="hidden" name="id" value="@claim.ClaimId" />
+                                                    <button type="submit" class="btn btn-danger btn-sm px-3">Reject</button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else if (claim.ClaimStatus == "Pending")
+                                        {
+                                            <span class="text-muted fst-italic">No actions available</span>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+
+                        <!-- Show message if no claims exist -->
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="9" class="text-muted fst-italic py-3">
+                                    No claims have been submitted yet.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add confirmation popups for approving claims
+        document.querySelectorAll("form[asp-action='ApproveClaim']").forEach(form => {
+            form.addEventListener("submit", e => {
+                if (!confirm("Are you sure you want to approve this claim?")) e.preventDefault();
+            });
+        });
+
+        // Add confirmation popups for rejecting claims
+        document.querySelectorAll("form[asp-action='RejectClaim']").forEach(form => {
+            form.addEventListener("submit", e => {
+                if (!confirm("Are you sure you want to reject this claim?")) e.preventDefault();
+            });
+        });
+    </script>
+}

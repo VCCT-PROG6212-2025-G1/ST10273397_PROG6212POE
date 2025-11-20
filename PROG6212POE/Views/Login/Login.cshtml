@@ -1,0 +1,112 @@
+﻿<!-- Character encoding and viewport settings for responsive design -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- CSS references -->
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/PROG6212POE.styles.css" asp-append-version="true" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+
+<style>
+    /* Navbar links: subtle color and lift on hover */
+    .nav-link {
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+        .nav-link:hover {
+            color: #ffd166 !important; /* Bright accent color */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+
+    /* Branding font styling */
+    .navbar-brand {
+        font-weight: 600;
+        font-size: 1.25rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* Footer font styling */
+    footer {
+        font-size: 0.9rem;
+    }
+
+        footer a:hover {
+            color: #ffd166 !important;
+        }
+
+    /* Main content fade-in animation */
+    main {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+</style>
+
+@{
+    ViewData["Title"] = "Login"; // Page title
+    Layout = null; // No master layout, standalone login page
+}
+
+<!-- Centered login card -->
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="card shadow-lg p-4 rounded-4 border-0" style="width: 400px;">
+        <div class="card-body">
+            <!-- Heading -->
+            <h2 class="text-center mb-4 text-primary fw-bold">Portal Login</h2>
+            <p class="text-muted text-center mb-4">Please enter your credentials to access the system.</p>
+
+            <!-- Login form -->
+            <form method="post" asp-action="Login" class="needs-validation" novalidate>
+                <!-- Username input -->
+                <div class="form-group mb-3">
+                    <label for="username" class="form-label fw-bold">Username</label>
+                    <input type="text" id="username" name="Username" class="form-control shadow-sm" placeholder="Enter username" required />
+                    <div class="invalid-feedback">Username is required.</div>
+                </div>
+
+                <!-- Password input -->
+                <div class="form-group mb-3">
+                    <label for="password" class="form-label fw-bold">Password</label>
+                    <input type="password" id="password" name="Password" class="form-control shadow-sm" placeholder="Enter password" required />
+                    <div class="invalid-feedback">Password is required.</div>
+                </div>
+
+                <!-- Role selection -->
+                <div class="form-group mb-4">
+                    <label for="role" class="form-label fw-bold">Select Role</label>
+                    <select id="role" name="Role" class="form-select shadow-sm" required>
+                        <option value="">-- Choose Role --</option>
+                        <option value="Lecturer">Lecturer</option>
+                        <option value="ProgrammeCoordinator">Programme Coordinator</option>
+                        <option value="AcademicManager">Academic Manager</option>
+                    </select>
+                    <div class="invalid-feedback">Please select a role.</div>
+                </div>
+
+                <!-- Submit button -->
+                <button type="submit" class="btn btn-primary w-100 shadow-sm">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Enable Bootstrap client-side validation
+        (function () {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    // Prevent submission if any field is invalid
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated'); // Show validation feedback
+                }, false);
+            });
+        })();
+    </script>
+}
