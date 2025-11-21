@@ -16,7 +16,19 @@ namespace PROG6212POE.Controllers
 
         // GET: PCAM/ClaimList
         // Displays all claims for review by Programme Coordinators or Academic Managers
-        public IActionResult ClaimList()
+        public IActionResult PCClaimList(UserModel user)
+        {
+            // Retrieve all claims from the database
+            var claims = _context.ClaimModel.ToList();
+
+            // Store current user role from session to handle role-based view logic
+            ViewBag.UserRole = HttpContext.Session.GetString("UserRole");
+
+            // Pass claims to the view
+            return View(claims);
+        }
+
+        public IActionResult AMClaimList(UserModel user)
         {
             // Retrieve all claims from the database
             var claims = _context.ClaimModel.ToList();

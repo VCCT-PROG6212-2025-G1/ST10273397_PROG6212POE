@@ -59,9 +59,9 @@
             <form method="post" asp-action="Login" class="needs-validation" novalidate>
                 <!-- Username input -->
                 <div class="form-group mb-3">
-                    <label for="username" class="form-label fw-bold">Username</label>
-                    <input type="text" id="username" name="Username" class="form-control shadow-sm" placeholder="Enter username" required />
-                    <div class="invalid-feedback">Username is required.</div>
+                    <label for="email" class="form-label fw-bold">Username</label>
+                    <input type="text" id="email" name="email" class="form-control shadow-sm" placeholder="Enter email" required />
+                    <div class="invalid-feedback">Email is required.</div>
                 </div>
 
                 <!-- Password input -->
@@ -69,19 +69,6 @@
                     <label for="password" class="form-label fw-bold">Password</label>
                     <input type="password" id="password" name="Password" class="form-control shadow-sm" placeholder="Enter password" required />
                     <div class="invalid-feedback">Password is required.</div>
-                </div>
-
-                <!-- Role selection -->
-                <div class="form-group mb-4">
-                    <label for="UserRole" class="form-label fw-bold">Select Role</label>
-                    <select id="UserRole" name="UserRole" class="form-select shadow-sm" required>
-                        <option value="">-- Choose Role --</option>
-                        <option value="@Role.Lecturer">Lecturer</option>
-                        <option value="@Role.ProgCoord">Programme Coordinator</option>
-                        <option value="@Role.AcadMan">Academic Manager</option>
-                        <option value="HR">HR</option>
-                    </select>
-                    <div class="invalid-feedback">Please select a role.</div>
                 </div>
 
                 <!-- Submit button -->

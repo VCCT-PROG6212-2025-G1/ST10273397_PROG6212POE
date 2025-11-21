@@ -1,67 +1,89 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PROG6212POE.Data;
 using PROG6212POE.Models;
 using static PROG6212POE.Models.UserModel;
+using System.Linq;
 
-public class LoginController : Controller
+namespace PROG6212POE.Controllers
 {
-    // GET: Login
-    // Returns the login page view
-    [HttpGet]
-    public IActionResult Login()
+    public class LoginController : Controller
     {
-        return View(); // Simply renders the login form
-    }
+        private readonly AppDbContext _context;
 
-    // POST: Login
-    // Handles login form submission
-    [HttpPost]
-    public IActionResult Login(string Username, string Password, string UserRole)
-    {
-        // Validate all fields: role, username, password
-        // Here, the password is hardcoded for testing purposes ("Password123!")
-        if (string.IsNullOrEmpty(UserRole) ||
-            string.IsNullOrEmpty(Username) ||
-            string.IsNullOrEmpty(Password) || Password != "Password123!")
+        public LoginController(AppDbContext context)
         {
-            // Add a general validation error
-            ModelState.AddModelError("", "Please Fill in All Details");
-            return View(); // Return the login view with the error displayed
+            _context = context;
         }
 
-        // Check if the user is a Lecturer
-        if (UserRole == "Lecturer" && Username == "JayDoe")
+        [HttpGet]
+        public IActionResult Login()
         {
-            // Set the user role in session for authorization checks later
-            HttpContext.Session.SetString("UserRole", "Lecturer");
-
-            // Redirect to Lecturer's dashboard (Overview page)
-            return RedirectToAction("Overview", "Lecturer");
-        }
-        // Check if the user is a Programme Coordinator
-        else if (UserRole == "ProgrammeCoordinator" && Username == "JaneDoe")
-        {
-            HttpContext.Session.SetString("UserRole", "ProgrammeCoordinator");
-
-            // Redirect to PCAM's Claim List page
-            return RedirectToAction("ClaimList", "PCAM");
-        }
-        // Check if the user is an Academic Manager
-        else if (UserRole == "AcademicManager" && Username == "JohnDoe")
-        {
-            HttpContext.Session.SetString("UserRole", "AcademicManager");
-
-            // Redirect to PCAM's Claim List page
-            return RedirectToAction("ClaimList", "PCAM");
-        }
-        else if (UserRole == "HR" && Username == "JaimeDoe")
-        {
-            HttpContext.Session.SetString("UserRole", "HR");
-
-            return RedirectToAction("Index", "HR");
+            return View();
         }
 
-            // If none of the credentials match, reload login page
-            ModelState.AddModelError("", "Invalid Email and Password");
-        return RedirectToAction("Login");
+        [HttpPost]
+        public IActionResult Login(string email, string Password)
+        {
+            // Validate all fields are filled
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(Password))
+            {
+                ModelState.AddModelError("", "Please Fill in All Details");
+                return View();
+            }
+
+            // Find user by email using LINQ
+            var user = _context.UserModel.FirstOrDefault(u => u.Email == email);
+
+            // Check if user exists
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Invalid Email or Password");
+                return View();
+            }
+
+            // Check if password matches
+            if (user.Password != Password)
+            {
+                ModelState.AddModelError("", "Invalid Email or Password");
+                return View();
+            }
+
+            // Store user information in session
+            HttpContext.Session.SetString("UserRole", user.UserRole.ToString());
+            HttpContext.Session.SetInt32("UserId", user.UserId);
+            HttpContext.Session.SetString("UserEmail", user.Email);
+            HttpContext.Session.SetString("UserName", $"{user.FirstName} {user.LastName}");
+
+            // Redirect based on role
+            if (user.UserRole == Role.Lecturer)
+            {
+                return RedirectToAction("Overview", "Lecturer");
+            }
+            else if (user.UserRole == Role.AcadMan)
+            {
+                return RedirectToAction("AMClaimList", "PCAM");
+            }
+            else if (user.UserRole == Role.ProgCoord)
+            {
+                return RedirectToAction("PCClaimList", "PCAM");
+            }
+            else if (user.UserRole == Role.HR)
+            {
+                return RedirectToAction("Index", "HR");
+            }
+
+            // Fallback if no role matches
+            ModelState.AddModelError("", "User role not recognized");
+            return View();
+        }
+
+        // Logout action to clear session
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login");
+        }
     }
 }

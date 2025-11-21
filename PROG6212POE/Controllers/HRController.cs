@@ -18,7 +18,7 @@ namespace PROG6212POE.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(UserModel user)
         {
             var users = _context.UserModel.ToList(); // Your user data
             var claims = _context.ClaimModel.ToList(); // Your claims data

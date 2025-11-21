@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PROG6212POE.Models;
+using static PROG6212POE.Models.UserModel;
 
 namespace PROG6212POE.Data
 {
@@ -85,6 +86,20 @@ namespace PROG6212POE.Data
                 entity.Property(p => p.SuppDocPath)
                 .HasColumnName("SuppDocPath");
             });
+
+            // Seed HR User
+            modelBuilder.Entity<UserModel>().HasData(
+                new UserModel
+                {
+                    UserId = 1,
+                    FirstName = "Admin",
+                    LastName = "HR",
+                    Email = "hr@company.com",
+                    Password = "HR123", // In production, this should be hashed!
+                    UserRole = Role.HR,
+                    HourlyRate = 0.0f
+                }
+            );
         }
 
     }

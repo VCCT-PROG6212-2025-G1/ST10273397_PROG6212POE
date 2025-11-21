@@ -92,7 +92,7 @@ namespace PROG6212POE.Controllers
 
         // GET: Lecturer/Overview
         // Displays all claims submitted by lecturers
-        public IActionResult Overview()
+        public IActionResult Overview(UserModel user)
         {
             // Retrieve all claims from the database
             var claims = _context.ClaimModel.ToList();

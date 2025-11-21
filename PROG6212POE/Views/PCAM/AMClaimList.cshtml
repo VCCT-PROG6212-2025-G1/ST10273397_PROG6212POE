@@ -1,15 +1,12 @@
-﻿@model IEnumerable<PROG6212POE.Models.ClaimModel>
+﻿@using static PROG6212POE.Models.UserModel
+@model IEnumerable<PROG6212POE.Models.ClaimModel>
 
 @{
     ViewData["Title"] = "Claim List"; // Page title
 
     // Determine the user's role from ViewBag to display in the heading
     string user;
-    @if (ViewBag.UserRole == "ProgrammeCoordinator")
-    {
-        user = "Programme Coordinator";
-    }
-    else
+    @if (ViewBag.UserRole == @Role.AcadMan)
     {
         user = "Academic Manager";
     }
@@ -21,7 +18,7 @@
             <!-- Heading and description -->
             <h2 class="text-primary text-center mb-3 fw-bold">Claims Review Dashboard</h2>
             <p class="text-muted text-center mb-4">
-                As a <strong>@user</strong>, you can review, verify, and approve or reject lecturer claims below.
+                As a <strong>@Role.AcadMan.ToString()</strong>, you can review, verify, and approve or reject lecturer claims below.
             </p>
 
             <!-- Table container -->
@@ -79,23 +76,6 @@
 
                                 <td>
                                     <!-- Actions column: buttons depend on role and claim status -->
-                                    @if (ViewBag.UserRole == "ProgrammeCoordinator" && claim.ClaimStatus == "Pending")
-                                    {
-                                        <div class="btn-group">
-                                            <!-- Verify button -->
-                                            <form asp-action="VerifyClaim" method="post" class="d-inline">
-                                                <input type="hidden" name="id" value="@claim.ClaimId" />
-                                                <button type="submit" class="btn btn-success btn-sm px-3">Verify</button>
-                                            </form>
-                                            <!-- Reject button -->
-                                            <form asp-action="RejectClaim" method="post" class="d-inline">
-                                                <input type="hidden" name="id" value="@claim.ClaimId" />
-                                                <button type="submit" class="btn btn-danger btn-sm px-3">Reject</button>
-                                            </form>
-                                        </div>
-                                    }
-                                    else if (ViewBag.UserRole == "AcademicManager")
-                                    {
                                         if (claim.ClaimStatus == "Verified")
                                         {
                                             <div class="btn-group">
@@ -115,7 +95,6 @@
                                         {
                                             <span class="text-muted fst-italic">No actions available</span>
                                         }
-                                    }
                                 </td>
                             </tr>
                         }
