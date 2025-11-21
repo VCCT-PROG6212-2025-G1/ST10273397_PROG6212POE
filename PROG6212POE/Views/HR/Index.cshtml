@@ -1,7 +1,15 @@
-﻿@model IEnumerable<PROG6212POE.Models.UserModel>
+﻿@using static PROG6212POE.Models.UserModel
+@model IEnumerable<PROG6212POE.Models.UserModel>
 @{
     ViewData["Title"] = "Index";
+    var role = Context.Session.GetString("UserRole");
 }
+
+@if (role != Role.HR.ToString())
+{
+    <span class="text-muted fst-italic">You don’t have access to these actions</span>
+}
+
 <h1>Users</h1>
 
 <div class="row">

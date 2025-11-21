@@ -3,13 +3,12 @@
 
 @{
     ViewData["Title"] = "Claim List"; // Page title
+    var role = Context.Session.GetString("UserRole");
+}
 
-    // Determine the user's role from ViewBag to display in the heading
-    string user;
-    @if (ViewBag.UserRole == @Role.ProgCoord.ToString())
-    {
-        user = "Programme Coordinator";
-    }
+@if (role != Role.ProgCoord.ToString())
+{
+    <span class="text-muted fst-italic">You don’t have access to these actions</span>
 }
 
 <div class="container mt-5">

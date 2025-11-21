@@ -3,6 +3,13 @@
 
 @{
     ViewData["Title"] = "Claim List"; // Page title
+    var role = Context.Session.GetString("UserRole");
+}
+
+
+@if (role != Role.AcadMan.ToString())
+{
+    <span class="text-muted fst-italic">You don’t have access to these actions</span>
 }
 
 <div class="container mt-5">

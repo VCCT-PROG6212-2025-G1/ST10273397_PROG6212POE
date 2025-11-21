@@ -3,6 +3,12 @@
 
 @{
     ViewData["Title"] = "Edit";
+    var role = Context.Session.GetString("UserRole");
+}
+
+@if (role != Role.HR.ToString())
+{
+    <span class="text-muted fst-italic">You don’t have access to these actions</span>
 }
 
 <h1>View</h1>

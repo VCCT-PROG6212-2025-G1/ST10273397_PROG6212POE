@@ -1,17 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using IronPdf;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using PROG6212POE.Data;
 using PROG6212POE.Models;
+using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using IronPdf;
-using System.IO;
-using System;
+using static PROG6212POE.Models.UserModel;
 
 namespace PROG6212POE.Controllers
-{
+{ 
     public class HRController : Controller
     {
         private readonly AppDbContext _context;
@@ -28,6 +29,13 @@ namespace PROG6212POE.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (string.IsNullOrEmpty(role) || role != Role.HR.ToString())
+            {
+                return RedirectToAction("AccessDenied", "Login");
+            }
+
             var users = _context.UserModel.ToList();
             var claims = _context.ClaimModel.ToList();
             ViewBag.Claims = claims;
@@ -37,6 +45,13 @@ namespace PROG6212POE.Controllers
         [HttpGet]
         public IActionResult Edit(int userId)
         {
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (string.IsNullOrEmpty(role) || role != Role.HR.ToString())
+            {
+                return RedirectToAction("AccessDenied", "Login");
+            }
+
             var user = _context.UserModel.Find(userId);
             if (user == null)
             {
@@ -78,6 +93,14 @@ namespace PROG6212POE.Controllers
         [HttpGet]
         public IActionResult Details(int userId)
         {
+
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (string.IsNullOrEmpty(role) || role != Role.HR.ToString())
+            {
+                return RedirectToAction("AccessDenied", "Login");
+            }
+
             var user = _context.UserModel.Find(userId);
 
             if (user == null)
@@ -97,6 +120,15 @@ namespace PROG6212POE.Controllers
         [HttpGet]
         public IActionResult CreateUser()
         {
+
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (string.IsNullOrEmpty(role) || role != Role.HR.ToString())
+            {
+                return RedirectToAction("AccessDenied", "Login");
+            }
+
+
             return View(new UserModel());
         }
 

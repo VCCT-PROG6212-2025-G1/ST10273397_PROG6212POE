@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PROG6212POE.Data;
 using PROG6212POE.Models;
+using static PROG6212POE.Models.UserModel;
 
 namespace PROG6212POE.Controllers
 {
@@ -16,6 +17,13 @@ namespace PROG6212POE.Controllers
         [HttpGet]
         public IActionResult SubmitClaim()
         {
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (string.IsNullOrEmpty(role) || role != Role.Lecturer.ToString())
+            {
+                return RedirectToAction("AccessDenied", "Login");
+            }
+
             // Get the logged-in user's ID from session
             int? userId = HttpContext.Session.GetInt32("UserId");
 
@@ -135,6 +143,13 @@ namespace PROG6212POE.Controllers
 
         public IActionResult Overview()
         {
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (string.IsNullOrEmpty(role) || role != Role.Lecturer.ToString())
+            {
+                return RedirectToAction("AccessDenied", "Login");
+            }
+
             // Get current user's ID from session
             int? userId = HttpContext.Session.GetInt32("UserId");
 

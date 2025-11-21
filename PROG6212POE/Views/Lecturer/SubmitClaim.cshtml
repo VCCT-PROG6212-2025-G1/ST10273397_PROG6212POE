@@ -1,7 +1,15 @@
-﻿@model PROG6212POE.Models.ClaimModel
+﻿@using static PROG6212POE.Models.UserModel
+@model PROG6212POE.Models.ClaimModel
 @{
     ViewData["Title"] = "Submit Claim";
     var user = ViewBag.User as PROG6212POE.Models.UserModel;
+    var role = Context.Session.GetString("UserRole");
+}
+
+
+@if (role != Role.Lecturer.ToString())
+{
+    <span class="text-muted fst-italic">You don’t have access to these actions</span>
 }
 
 <div class="container mt-5">

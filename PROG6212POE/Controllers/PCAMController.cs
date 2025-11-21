@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PROG6212POE.Data;
 using PROG6212POE.Models;
+using static PROG6212POE.Models.UserModel;
 
 namespace PROG6212POE.Controllers
 {
@@ -19,6 +20,14 @@ namespace PROG6212POE.Controllers
         [HttpGet]
         public IActionResult PCClaimList()
         {
+
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (string.IsNullOrEmpty(role) || role != Role.ProgCoord.ToString())
+            {
+                return RedirectToAction("AccessDenied", "Login");
+            }
+
             // Retrieve all claims from the database
             var claims = _context.ClaimModel.ToList();
 
@@ -32,6 +41,13 @@ namespace PROG6212POE.Controllers
         [HttpGet]
         public IActionResult AMClaimList()
         {
+            var role = HttpContext.Session.GetString("UserRole");
+
+            if (string.IsNullOrEmpty(role) || role != Role.AcadMan.ToString())
+            {
+                return RedirectToAction("AccessDenied", "Login");
+            }
+
             // Retrieve all claims from the database
             var claims = _context.ClaimModel.ToList();
 
