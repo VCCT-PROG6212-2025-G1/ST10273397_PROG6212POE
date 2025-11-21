@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using PROG6212POE.Data;
 using PROG6212POE.Models;
 using static PROG6212POE.Models.UserModel;
+using System;
+using System.Linq;
 
 namespace PROG6212POE.Controllers
 {
@@ -9,135 +12,179 @@ namespace PROG6212POE.Controllers
     {
         private readonly AppDbContext _context;
 
-        // Constructor: injects the database context
+        // Constructor: inject DB context
         public PCAMController(AppDbContext context)
         {
             _context = context;
         }
 
-        // GET: PCAM/ClaimList
-        // Displays all claims for review by Programme Coordinators or Academic Managers
+        // ----------------------------------------------------------------------
+        // GET: Programme Coordinator Claim List
+        // ----------------------------------------------------------------------
         [HttpGet]
         public IActionResult PCClaimList()
         {
-
-            var role = HttpContext.Session.GetString("UserRole");
-
-            if (string.IsNullOrEmpty(role) || role != Role.ProgCoord.ToString())
+            try
             {
-                return RedirectToAction("AccessDenied", "Login");
+                var role = HttpContext.Session.GetString("UserRole");
+
+                if (role != Role.ProgCoord.ToString())
+                    return RedirectToAction("AccessDenied", "Login");
+
+                var claims = _context.ClaimModel.ToList();
+
+                ViewBag.UserRole = role;
+                return View(claims);
             }
-
-            // Retrieve all claims from the database
-            var claims = _context.ClaimModel.ToList();
-
-            // Store current user role from session to handle role-based view logic
-            ViewBag.UserRole = HttpContext.Session.GetString("UserRole");
-
-            // Pass claims to the view
-            return View(claims);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading PC claim list: {ex.Message}");
+                TempData["Error"] = "Unable to load claims. Please try again later.";
+                return View(new List<ClaimModel>());
+            }
         }
 
+        // ----------------------------------------------------------------------
+        // GET: Academic Manager Claim List
+        // ----------------------------------------------------------------------
         [HttpGet]
         public IActionResult AMClaimList()
         {
-            var role = HttpContext.Session.GetString("UserRole");
-
-            if (string.IsNullOrEmpty(role) || role != Role.AcadMan.ToString())
+            try
             {
-                return RedirectToAction("AccessDenied", "Login");
+                var role = HttpContext.Session.GetString("UserRole");
+
+                if (role != Role.AcadMan.ToString())
+                    return RedirectToAction("AccessDenied", "Login");
+
+                var claims = _context.ClaimModel.ToList();
+                ViewBag.UserRole = role;
+
+                return View(claims);
             }
-
-            // Retrieve all claims from the database
-            var claims = _context.ClaimModel.ToList();
-
-            // Store current user role from session to handle role-based view logic
-            ViewBag.UserRole = HttpContext.Session.GetString("UserRole");
-
-            // Pass claims to the view
-            return View(claims);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading AM claim list: {ex.Message}");
+                TempData["Error"] = "Unable to load claims. Please try again later.";
+                return View(new List<ClaimModel>());
+            }
         }
 
-        // POST: PCAM/VerifyClaim
-        // Used by Programme Coordinator to mark a claim as "Verified"
+        // ----------------------------------------------------------------------
+        // POST: Verify Claim (Programme Coordinator)
+        // ----------------------------------------------------------------------
         [HttpPost]
         public IActionResult VerifyClaim(int id)
         {
-            // Find the claim by its ID
-            var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
-
-            if (claim != null)
+            try
             {
-                // Update claim status
-                claim.ClaimStatus = "Verified";
+                var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
 
-                // Save changes to the database
+                if (claim == null)
+                {
+                    TempData["Error"] = "Claim not found.";
+                    return RedirectToAction("PCClaimList");
+                }
+
+                claim.ClaimStatus = "Verified";
                 _context.SaveChanges();
 
-                // Optional feedback message for the user
                 TempData["Success"] = $"Claim #{id} has been verified!";
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error verifying claim: {ex.Message}");
+                TempData["Error"] = "An error occurred while verifying the claim.";
+            }
 
-            // Redirect back to the claim list view
             return RedirectToAction("PCClaimList");
         }
 
-        // POST: PCAM/ApproveClaim
-        // Used by Academic Manager to approve a claim after verification
+        // ----------------------------------------------------------------------
+        // POST: Approve Claim (Academic Manager)
+        // ----------------------------------------------------------------------
         [HttpPost]
         public IActionResult ApproveClaim(int id)
         {
-            var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
-
-            if (claim != null)
+            try
             {
-                // Update claim status to Approved
-                claim.ClaimStatus = "Approved";
+                var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
 
+                if (claim == null)
+                {
+                    TempData["Error"] = "Claim not found.";
+                    return RedirectToAction("AMClaimList");
+                }
+
+                claim.ClaimStatus = "Approved";
                 _context.SaveChanges();
 
-                // Feedback message
                 TempData["Success"] = $"Claim #{id} has been approved!";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error approving claim: {ex.Message}");
+                TempData["Error"] = "An error occurred while approving the claim.";
             }
 
             return RedirectToAction("AMClaimList");
         }
 
-        // POST: PCAM/RejectClaim
-        // Used by both Programme Coordinator and Academic Manager to reject a claim
+        // ----------------------------------------------------------------------
+        // POST: Reject Claim (Programme Coordinator)
+        // ----------------------------------------------------------------------
         [HttpPost]
         public IActionResult PCRejectClaim(int id)
         {
-            var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
-
-            if (claim != null)
+            try
             {
-                // Update claim status to Rejected
-                claim.ClaimStatus = "Rejected";
+                var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
 
+                if (claim == null)
+                {
+                    TempData["Error"] = "Claim not found.";
+                    return RedirectToAction("PCClaimList");
+                }
+
+                claim.ClaimStatus = "Rejected";
                 _context.SaveChanges();
 
-                // Feedback message
                 TempData["Error"] = $"Claim #{id} has been rejected.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error rejecting claim: {ex.Message}");
+                TempData["Error"] = "An error occurred while rejecting the claim.";
             }
 
             return RedirectToAction("PCClaimList");
         }
 
+        // ----------------------------------------------------------------------
+        // POST: Reject Claim (Academic Manager)
+        // ----------------------------------------------------------------------
         [HttpPost]
         public IActionResult AMRejectClaim(int id)
         {
-            var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
-
-            if (claim != null)
+            try
             {
-                // Update claim status to Rejected
-                claim.ClaimStatus = "Rejected";
+                var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
 
+                if (claim == null)
+                {
+                    TempData["Error"] = "Claim not found.";
+                    return RedirectToAction("AMClaimList");
+                }
+
+                claim.ClaimStatus = "Rejected";
                 _context.SaveChanges();
 
-                // Feedback message
                 TempData["Error"] = $"Claim #{id} has been rejected.";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error rejecting claim: {ex.Message}");
+                TempData["Error"] = "An error occurred while rejecting the claim.";
             }
 
             return RedirectToAction("AMClaimList");

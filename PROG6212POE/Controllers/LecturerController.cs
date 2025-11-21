@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Cleaned, refactored, and fully commented LecturerController with error handling
+using Microsoft.AspNetCore.Mvc;
 using PROG6212POE.Data;
 using PROG6212POE.Models;
 using static PROG6212POE.Models.UserModel;
@@ -14,156 +15,165 @@ namespace PROG6212POE.Controllers
             _context = context;
         }
 
+        // ------------------------------
+        // Submit Claim (GET)
+        // ------------------------------
         [HttpGet]
         public IActionResult SubmitClaim()
         {
-            var role = HttpContext.Session.GetString("UserRole");
-
-            if (string.IsNullOrEmpty(role) || role != Role.Lecturer.ToString())
+            try
             {
-                return RedirectToAction("AccessDenied", "Login");
+                // Validate lecturer role
+                var role = HttpContext.Session.GetString("UserRole");
+                if (string.IsNullOrEmpty(role) || role != Role.Lecturer.ToString())
+                    return RedirectToAction("AccessDenied", "Login");
+
+                // Validate logged-in user
+                int? userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null)
+                    return RedirectToAction("Login", "Login");
+
+                var user = _context.UserModel.Find(userId.Value);
+                if (user == null)
+                    return RedirectToAction("Login", "Login");
+
+                // Send user data to the view for pre-filled fields
+                ViewBag.User = user;
+
+                return View(new ClaimModel());
             }
-
-            // Get the logged-in user's ID from session
-            int? userId = HttpContext.Session.GetInt32("UserId");
-
-            if (userId == null)
+            catch (Exception ex)
             {
-                return RedirectToAction("Login", "Login");
+                return StatusCode(500, $"Error loading claim submission page: {ex.Message}");
             }
-
-            var user = _context.UserModel.Find(userId.Value);
-
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Login");
-            }
-
-            // Pass user to ViewBag so the form can pre-fill read-only fields
-            ViewBag.User = user;
-
-            // Return empty ClaimModel for form binding
-            return View(new ClaimModel());
         }
 
+        // ------------------------------
+        // Submit Claim (POST)
+        // ------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitClaim(ClaimModel claim, IFormFile SuppDocName)
         {
-            // Remove validation for fields that are set from ViewBag/hidden fields
-            ModelState.Remove("UserName");
-            ModelState.Remove("HourlyRate");
-
-            if (!ModelState.IsValid)
+            try
             {
-                // Re-populate ViewBag.User if returning to view with errors
-                int? userId = HttpContext.Session.GetInt32("UserId");
-                if (userId != null)
-                {
-                    ViewBag.User = _context.UserModel.Find(userId.Value);
-                }
-                return View(claim);
-            }
+                // Remove validation for view-controlled fields
+                ModelState.Remove("UserName");
+                ModelState.Remove("HourlyRate");
 
-            // Handle file upload
-            if (SuppDocName != null && SuppDocName.Length > 0)
-            {
-                if (SuppDocName.ContentType != "application/pdf")
+                if (!ModelState.IsValid)
                 {
-                    ModelState.AddModelError("SuppDocName", "Only PDF files are allowed.");
-
-                    // Re-populate ViewBag.User
-                    int? userId = HttpContext.Session.GetInt32("UserId");
-                    if (userId != null)
-                    {
-                        ViewBag.User = _context.UserModel.Find(userId.Value);
-                    }
+                    ReloadUserIntoViewBag();
                     return View(claim);
                 }
 
-                if (SuppDocName.Length > 10 * 1024 * 1024)
+                // ------------------------------
+                // File Upload Handling
+                // ------------------------------
+                if (SuppDocName != null && SuppDocName.Length > 0)
                 {
-                    ModelState.AddModelError("SuppDocName", "File size must be under 10 MB.");
-
-                    // Re-populate ViewBag.User
-                    int? userId = HttpContext.Session.GetInt32("UserId");
-                    if (userId != null)
+                    // Only accept PDFs
+                    if (SuppDocName.ContentType != "application/pdf")
                     {
-                        ViewBag.User = _context.UserModel.Find(userId.Value);
+                        ModelState.AddModelError("SuppDocName", "Only PDF files are allowed.");
+                        ReloadUserIntoViewBag();
+                        return View(claim);
                     }
+
+                    // Max 10 MB
+                    if (SuppDocName.Length > 10 * 1024 * 1024)
+                    {
+                        ModelState.AddModelError("SuppDocName", "File size must be under 10 MB.");
+                        ReloadUserIntoViewBag();
+                        return View(claim);
+                    }
+
+                    // Ensure uploads directory exists
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    // Save file with unique name
+                    var uniqueFileName = Guid.NewGuid() + Path.GetExtension(SuppDocName.FileName);
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await SuppDocName.CopyToAsync(stream);
+                    }
+
+                    claim.SuppDocPath = uniqueFileName;
+                    claim.SuppDocName = SuppDocName.FileName;
+                }
+                else
+                {
+                    claim.SuppDocPath = string.Empty;
+                    claim.SuppDocName = string.Empty;
+                }
+
+                // ------------------------------
+                // Logical Validations
+                // ------------------------------
+                if (claim.HoursWorked > 180)
+                {
+                    ModelState.AddModelError("HoursWorked", "Cannot work more than 180 hours in a month.");
+                    ReloadUserIntoViewBag();
                     return View(claim);
                 }
 
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
+                // Assign Claim ID (poor man's auto-ID, should be Identity column in DB)
+                claim.ClaimId = _context.ClaimModel.Count() + 1;
+                claim.ClaimStatus = "Pending";
 
-                var uniqueFileName = Guid.NewGuid() + Path.GetExtension(SuppDocName.FileName);
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                // Save to DB
+                _context.ClaimModel.Add(claim);
+                await _context.SaveChangesAsync();
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await SuppDocName.CopyToAsync(stream);
-                }
-
-                claim.SuppDocPath = uniqueFileName;
-                claim.SuppDocName = SuppDocName.FileName;
+                TempData["Success"] = "Your claim has been submitted successfully!";
+                return RedirectToAction("Overview");
             }
-            else
+            catch (Exception ex)
             {
-                claim.SuppDocPath = "";
-                claim.SuppDocName = "";
+                return StatusCode(500, $"Error submitting claim: {ex.Message}");
             }
-
-            if (claim.HoursWorked > 180)
-            {
-                ModelState.AddModelError("HoursWorked", "Cannot work more than 180 hours in a month");
-
-                // Re-populate ViewBag.User
-                int? userId = HttpContext.Session.GetInt32("UserId");
-                if (userId != null)
-                {
-                    ViewBag.User = _context.UserModel.Find(userId.Value);
-                }
-                return View(claim);
-            }
-
-            claim.ClaimId = _context.ClaimModel.ToList().Count + 1;
-
-            // Set default status
-            claim.ClaimStatus = "Pending";
-
-            // Save claim to database
-            _context.ClaimModel.Add(claim);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Your claim has been submitted successfully!";
-            return RedirectToAction("Overview");
         }
 
+        // ------------------------------
+        // Lecturer Claim Overview
+        // ------------------------------
         public IActionResult Overview()
         {
-            var role = HttpContext.Session.GetString("UserRole");
-
-            if (string.IsNullOrEmpty(role) || role != Role.Lecturer.ToString())
+            try
             {
-                return RedirectToAction("AccessDenied", "Login");
-            }
+                var role = HttpContext.Session.GetString("UserRole");
+                if (string.IsNullOrEmpty(role) || role != Role.Lecturer.ToString())
+                    return RedirectToAction("AccessDenied", "Login");
 
-            // Get current user's ID from session
+                // Get current user's claims only
+                int? userId = HttpContext.Session.GetInt32("UserId");
+                if (userId == null)
+                    return RedirectToAction("Login", "Login");
+
+                var claims = _context.ClaimModel
+                    .Where(c => c.UserId == userId.Value)
+                    .ToList();
+
+                return View(claims);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error loading claims overview: {ex.Message}");
+            }
+        }
+
+        // ------------------------------
+        // Helper Method: Reload current user for ViewBag
+        // ------------------------------
+        private void ReloadUserIntoViewBag()
+        {
             int? userId = HttpContext.Session.GetInt32("UserId");
-
-            if (userId == null)
-            {
-                return RedirectToAction("Login", "Login");
-            }
-
-            // Only show claims for the current user
-            var claims = _context.ClaimModel
-                .Where(c => c.UserId == userId.Value)
-                .ToList();
-
-            return View(claims);
+            if (userId != null)
+                ViewBag.User = _context.UserModel.Find(userId.Value);
         }
     }
 }

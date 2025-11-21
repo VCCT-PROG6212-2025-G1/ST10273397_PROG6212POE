@@ -6,64 +6,149 @@
     var role = Context.Session.GetString("UserRole");
 }
 
+<!-- Access control message -->
 @if (role != Role.HR.ToString())
 {
-<span class="text-muted fst-italic">You don’t have access to these actions</span>
+    <div class="alert alert-warning text-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> You don’t have access to these actions
+    </div>
 }
 
-<h1>Create User</h1>
-
+<h1 class="text-center text-primary fw-bold mb-3">
+    <i class="bi bi-person-plus-fill"></i> Create User
+</h1>
+<div class="text-center mb-4">
+    <small class="text-muted">Only users in the <span class="badge bg-info text-dark">HR</span> role can create new users</small>
+</div>
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="CreateUser">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="FirstName" class="control-label">First Name</label>
-                <input asp-for="FirstName" class="form-control" />
-                <span asp-validation-for="FirstName" class="text-danger"></span>
+
+<div class="row justify-content-center mt-3">
+    <div class="col-lg-7 col-md-9">
+        <!-- Main user creation form -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <div>
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill me-2"></i>User details</h5>
+                    <small class="text-muted">Fill in the required fields to add a user</small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-secondary">Secure</span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="LastName" class="control-label">Last Name</label>
-                <input asp-for="LastName" class="form-control" />
-                <span asp-validation-for="LastName" class="text-danger"></span>
+
+            <div class="card-body p-4">
+                <form asp-action="CreateUser" class="p-2">
+
+                    <!-- Validation summary -->
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <!-- First Name -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="FirstName" class="form-label fw-semibold">First Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                                    <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
+                                </div>
+                                <small class="form-text text-muted">Given name as it appears on official records.</small>
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="LastName" class="form-label fw-semibold">Last Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person-badge-fill"></i></span>
+                                    <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
+                                </div>
+                                <small class="form-text text-muted">Family name / surname.</small>
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label asp-for="Email" class="form-label fw-semibold">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"></span>
+                                    <input asp-for="Email" class="form-control" placeholder="example@mail.com" />
+                                </div>
+                                <small class="form-text text-muted">Work or personal email used for login and notifications.</small>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label asp-for="Password" class="form-label fw-semibold">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                    <input asp-for="Password" class="form-control" type="password" placeholder="Enter password" />
+                                </div>
+                                <small class="form-text text-muted">Choose a strong password (min. 8 characters recommended).</small>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Role Dropdown -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="UserRole" class="form-label fw-semibold">Role</label>
+                                <select asp-for="UserRole" class="form-select" aria-label="Role select">
+                                    <option value="@Role.Lecturer">Lecturer</option>
+                                    <option value="@Role.ProgCoord">Programme Coordinator</option>
+                                    <option value="@Role.AcadMan">Academic Manager</option>
+                                    <option value="@Role.HR">HR</option>
+                                </select>
+                                <small class="form-text text-muted">Assign a role to control access levels.</small>
+                                <span asp-validation-for="UserRole" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Hourly Rate -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="HourlyRate" class="form-label fw-semibold">Hourly Rate</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R</span>
+                                    <input asp-for="HourlyRate" class="form-control" placeholder="Enter hourly rate" />
+                                </div>
+                                <small class="form-text text-muted">Leave blank if not applicable.</small>
+                                <span asp-validation-for="HourlyRate" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-flex justify-content-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg fw-semibold me-3">
+                            <i class="bi bi-check-circle-fill me-2"></i>Create User
+                        </button>
+
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg fw-semibold">
+                            <i class="bi bi-arrow-left-circle-fill me-2"></i>Back to User List
+                        </a>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Password" class="control-label"></label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserRole" class="control-label">Role</label>
-                <select asp-for="UserRole" class="form-control">
-                    <option value="@Role.Lecturer">Lecturer</option>
-                    <option value="@Role.ProgCoord">Programme Coordinator</option>
-                    <option value="@Role.AcadMan">Academic Manager</option>
-                    <option value="@Role.HR">HR</option>
-                </select>
-                <span asp-validation-for="UserRole" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="HourlyRate" class="control-label">Hourly Rate</label>
-                <input asp-for="HourlyRate" class="form-control" />
-                <span asp-validation-for="HourlyRate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<!-- Back to list link -->
+<div class="d-md-none text-center mt-3">
+    <a asp-action="Index" class="text-decoration-none text-muted">
+        <i class="bi bi-arrow-left-circle-fill me-1"></i>Back to User List
+    </a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+@{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

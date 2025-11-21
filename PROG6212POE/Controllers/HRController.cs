@@ -1,4 +1,5 @@
-﻿using IronPdf;
+﻿// Cleaned and improved HRController with comments and error handling
+using IronPdf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 using static PROG6212POE.Models.UserModel;
 
 namespace PROG6212POE.Controllers
-{ 
+{
     public class HRController : Controller
     {
         private readonly AppDbContext _context;
@@ -26,184 +27,231 @@ namespace PROG6212POE.Controllers
             _viewEngine = viewEngine;
         }
 
+        // ------------------------------
+        // HR Dashboard
+        // ------------------------------
         [HttpGet]
         public IActionResult Index()
         {
-            var role = HttpContext.Session.GetString("UserRole");
-
-            if (string.IsNullOrEmpty(role) || role != Role.HR.ToString())
+            try
             {
-                return RedirectToAction("AccessDenied", "Login");
-            }
+                var role = HttpContext.Session.GetString("UserRole");
 
-            var users = _context.UserModel.ToList();
-            var claims = _context.ClaimModel.ToList();
-            ViewBag.Claims = claims;
-            return View(users);
+                if (string.IsNullOrEmpty(role) || role != Role.HR.ToString())
+                    return RedirectToAction("AccessDenied", "Login");
+
+                var users = _context.UserModel.ToList();
+                var claims = _context.ClaimModel.ToList();
+
+                ViewBag.Claims = claims;
+                return View(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error loading HR dashboard: {ex.Message}");
+            }
         }
 
+        // ------------------------------
+        // Edit User (GET)
+        // ------------------------------
         [HttpGet]
         public IActionResult Edit(int userId)
         {
-            var role = HttpContext.Session.GetString("UserRole");
-
-            if (string.IsNullOrEmpty(role) || role != Role.HR.ToString())
+            try
             {
-                return RedirectToAction("AccessDenied", "Login");
-            }
+                var role = HttpContext.Session.GetString("UserRole");
+                if (role != Role.HR.ToString())
+                    return RedirectToAction("AccessDenied", "Login");
 
-            var user = _context.UserModel.Find(userId);
-            if (user == null)
-            {
-                return NotFound();
+                var user = _context.UserModel.Find(userId);
+                if (user == null)
+                    return NotFound();
+
+                return View(user);
             }
-            return View(user);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error loading Edit page: {ex.Message}");
+            }
         }
 
+        // ------------------------------
+        // Edit User (POST)
+        // ------------------------------
         [HttpPost]
         public async Task<IActionResult> Edit(UserModel user)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return View(user);
+                if (!ModelState.IsValid)
+                    return View(user);
+
+                var existingUser = _context.UserModel.Find(user.UserId);
+                if (existingUser == null)
+                    return NotFound();
+
+                // Update user fields
+                existingUser.FirstName = user.FirstName;
+                existingUser.LastName = user.LastName;
+                existingUser.Email = user.Email;
+                existingUser.UserRole = user.UserRole;
+                existingUser.HourlyRate = user.HourlyRate;
+
+                // Update password only if changed
+                if (!string.IsNullOrWhiteSpace(user.Password))
+                    existingUser.Password = user.Password;
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index");
             }
-
-            var existingUser = _context.UserModel.Find(user.UserId);
-
-            if (existingUser == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return StatusCode(500, $"Error updating user: {ex.Message}");
             }
-
-            existingUser.FirstName = user.FirstName;
-            existingUser.LastName = user.LastName;
-            existingUser.Email = user.Email;
-            existingUser.UserRole = user.UserRole;
-            existingUser.HourlyRate = user.HourlyRate;
-
-            if (!string.IsNullOrWhiteSpace(user.Password))
-            {
-                existingUser.Password = user.Password;
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
         }
 
+        // ------------------------------
+        // User Details
+        // ------------------------------
         [HttpGet]
         public IActionResult Details(int userId)
         {
-
-            var role = HttpContext.Session.GetString("UserRole");
-
-            if (string.IsNullOrEmpty(role) || role != Role.HR.ToString())
+            try
             {
-                return RedirectToAction("AccessDenied", "Login");
+                var role = HttpContext.Session.GetString("UserRole");
+                if (role != Role.HR.ToString())
+                    return RedirectToAction("AccessDenied", "Login");
+
+                var user = _context.UserModel.Find(userId);
+                if (user == null)
+                    return NotFound();
+
+                var userClaims = _context.ClaimModel.Where(c => c.UserId == userId).ToList();
+                ViewBag.Claims = userClaims;
+
+                return View(user);
             }
-
-            var user = _context.UserModel.Find(userId);
-
-            if (user == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return StatusCode(500, $"Error loading user details: {ex.Message}");
             }
-
-            var userClaims = _context.ClaimModel
-                .Where(c => c.UserId == userId)
-                .ToList();
-
-            ViewBag.Claims = userClaims;
-
-            return View(user);
         }
 
+        // ------------------------------
+        // Create User (GET)
+        // ------------------------------
         [HttpGet]
         public IActionResult CreateUser()
         {
-
-            var role = HttpContext.Session.GetString("UserRole");
-
-            if (string.IsNullOrEmpty(role) || role != Role.HR.ToString())
+            try
             {
-                return RedirectToAction("AccessDenied", "Login");
+                var role = HttpContext.Session.GetString("UserRole");
+                if (role != Role.HR.ToString())
+                    return RedirectToAction("AccessDenied", "Login");
+
+                return View(new UserModel());
             }
-
-
-            return View(new UserModel());
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error loading Create User page: {ex.Message}");
+            }
         }
 
+        // ------------------------------
+        // Create User (POST)
+        // ------------------------------
         [HttpPost]
         public async Task<IActionResult> CreateUser(UserModel user)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return View(user);
-            }
+                if (!ModelState.IsValid)
+                    return View(user);
 
-            _context.UserModel.Add(user);
-            await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
+                _context.UserModel.Add(user);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error creating user: {ex.Message}");
+            }
         }
 
+        // ------------------------------
+        // Generate PDF Report
+        // ------------------------------
         [HttpGet]
         public async Task<IActionResult> GenerateReport(int userId)
         {
-            var user = _context.UserModel.Find(userId);
 
-            if (user == null)
+            var userRole = HttpContext.Session.GetString("UserRole");
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+
+            if (userRole != null || currentUserId != null)
             {
-                return RedirectToAction("Details");
+                return RedirectToAction("AccessDenied");
             }
 
-            var claims = _context.ClaimModel
-                .Where(c => c.UserId == userId)
-                .ToList();
 
-            // Prepare ViewBag for the rendered view
-            ViewBag.Claims = claims;
+            try
+            {
+                var user = _context.UserModel.Find(userId);
+                if (user == null)
+                    return NotFound("User not found.");
 
-            // Render the view to HTML string
-            var html = await RenderViewToStringAsync("ReportTemplate", user);
+                var claims = _context.ClaimModel.Where(c => c.UserId == userId).ToList();
+                ViewBag.Claims = claims;
 
-            // Generate PDF from HTML
-            var pdf = _pdfRenderer.RenderHtmlAsPdf(html);
+                // Generate HTML
+                var html = await RenderViewToStringAsync("ReportTemplate", user);
+                var pdf = _pdfRenderer.RenderHtmlAsPdf(html);
 
-            // Return PDF file
-            return File(
-                pdf.BinaryData,
-                "application/pdf",
-                $"UserReport-{user.FirstName}{user.LastName}-{DateTime.Now:dd/MM/yyy}.pdf"
-            );
+                return File(
+                    pdf.BinaryData,
+                    "application/pdf",
+                    $"UserReport-{user.FirstName}{user.LastName}-{DateTime.Now:yyyyMMdd}.pdf"
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error generating report: {ex.Message}");
+            }
         }
 
+        // ------------------------------
+        // Convert Razor View to HTML
+        // ------------------------------
         private async Task<string> RenderViewToStringAsync(string viewName, object model)
         {
-            ViewData.Model = model;
-
-            using var writer = new StringWriter();
-
-            // Find the view
-            var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
-
-            if (viewResult.View == null)
+            try
             {
-                throw new ArgumentNullException($"View '{viewName}' not found");
+                ViewData.Model = model;
+
+                using var writer = new StringWriter();
+                var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
+
+                if (viewResult.View == null)
+                    throw new ArgumentNullException($"View '{viewName}' not found.");
+
+                var viewContext = new ViewContext(
+                    ControllerContext,
+                    viewResult.View,
+                    ViewData,
+                    TempData,
+                    writer,
+                    new HtmlHelperOptions()
+                );
+
+                await viewResult.View.RenderAsync(viewContext);
+                return writer.ToString();
             }
-
-            // Create view context
-            var viewContext = new ViewContext(
-                ControllerContext,
-                viewResult.View,
-                ViewData,
-                TempData,
-                writer,
-                new HtmlHelperOptions()
-            );
-
-            // Render the view
-            await viewResult.View.RenderAsync(viewContext);
-
-            return writer.GetStringBuilder().ToString();
+            catch (Exception ex)
+            {
+                throw new Exception($"Error rendering view '{viewName}': {ex.Message}");
+            }
         }
     }
 }
