@@ -3,13 +3,6 @@
 
 @{
     ViewData["Title"] = "Claim List"; // Page title
-
-    // Determine the user's role from ViewBag to display in the heading
-    string user;
-    @if (ViewBag.UserRole == @Role.AcadMan.ToString())
-    {
-        user = "Academic Manager";
-    }
 }
 
 <div class="container mt-5">

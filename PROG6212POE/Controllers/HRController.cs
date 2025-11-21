@@ -1,18 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using PROG6212POE.Data;
 using PROG6212POE.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using IronPdf;
+using System.IO;
+using System;
 
 namespace PROG6212POE.Controllers
 {
     public class HRController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly ChromePdfRenderer _pdfRenderer;
+        private readonly ICompositeViewEngine _viewEngine;
 
-        public HRController(AppDbContext context)
+        public HRController(AppDbContext context, ChromePdfRenderer pdfRenderer, ICompositeViewEngine viewEngine)
         {
             _context = context;
+            _pdfRenderer = pdfRenderer;
+            _viewEngine = viewEngine;
         }
 
         [HttpGet]
@@ -75,7 +85,6 @@ namespace PROG6212POE.Controllers
                 return NotFound();
             }
 
-            // Get all claims for this specific user
             var userClaims = _context.ClaimModel
                 .Where(c => c.UserId == userId)
                 .ToList();
@@ -99,10 +108,70 @@ namespace PROG6212POE.Controllers
                 return View(user);
             }
 
-            user.UserId = _context.UserModel.ToList().Count + 1;
             _context.UserModel.Add(user);
             await _context.SaveChangesAsync();
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GenerateReport(int userId)
+        {
+            var user = _context.UserModel.Find(userId);
+
+            if (user == null)
+            {
+                return RedirectToAction("Details");
+            }
+
+            var claims = _context.ClaimModel
+                .Where(c => c.UserId == userId)
+                .ToList();
+
+            // Prepare ViewBag for the rendered view
+            ViewBag.Claims = claims;
+
+            // Render the view to HTML string
+            var html = await RenderViewToStringAsync("ReportTemplate", user);
+
+            // Generate PDF from HTML
+            var pdf = _pdfRenderer.RenderHtmlAsPdf(html);
+
+            // Return PDF file
+            return File(
+                pdf.BinaryData,
+                "application/pdf",
+                $"UserReport-{user.FirstName}{user.LastName}-{DateTime.Now:dd/MM/yyy}.pdf"
+            );
+        }
+
+        private async Task<string> RenderViewToStringAsync(string viewName, object model)
+        {
+            ViewData.Model = model;
+
+            using var writer = new StringWriter();
+
+            // Find the view
+            var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
+
+            if (viewResult.View == null)
+            {
+                throw new ArgumentNullException($"View '{viewName}' not found");
+            }
+
+            // Create view context
+            var viewContext = new ViewContext(
+                ControllerContext,
+                viewResult.View,
+                ViewData,
+                TempData,
+                writer,
+                new HtmlHelperOptions()
+            );
+
+            // Render the view
+            await viewResult.View.RenderAsync(viewContext);
+
+            return writer.GetStringBuilder().ToString();
         }
     }
 }

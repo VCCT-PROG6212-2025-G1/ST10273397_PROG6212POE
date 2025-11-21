@@ -1,0 +1,93 @@
+﻿@model PROG6212POE.Models.UserModel
+@{
+    var claims = ViewBag.Claims as List<PROG6212POE.Models.ClaimModel>;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>User Report</h1>
+        <p>Generated: @DateTime.Now.ToString("dd MMMM yyyy")</p>
+    </div>
+
+    <h2>User Information</h2>
+    <table>
+        <tr><td><strong>Name:</strong></td><td>@Model.FirstName @Model.LastName</td></tr>
+        <tr><td><strong>Email:</strong></td><td>@Model.Email</td></tr>
+        <tr><td><strong>Role:</strong></td><td>@Model.UserRole</td></tr>
+        <tr><td><strong>Hourly Rate:</strong></td><td>R @Model.HourlyRate.ToString("F2")</td></tr>
+    </table>
+
+    <h2>Claims History</h2>
+    @if (claims != null && claims.Any())
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Claim ID</th>
+                    <th>Claim Date</th>
+                    <th>Title</th>
+                    <th>Hours</th>
+                    <th>Rate</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in claims)
+                {
+                    <tr>
+                        <td>@claim.ClaimId</td>
+                        <td>@claim.DateSubmitted</td>
+                        <td>@claim.Title</td>
+                        <td>@claim.HoursWorked</td>
+                        <td>R @claim.HourlyRate.ToString("F2")</td>
+                        <td>R @claim.TotalAmount.ToString("F2")</td>
+                        <td>@claim.ClaimStatus</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4"><strong>Total:</strong></td>
+                    <td colspan="2"><strong>R @claims.Where(c => c.ClaimStatus == "Approved").Sum(c => c.TotalAmount).ToString("F2")</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    }
+    else
+    {
+        <p>No claims found.</p>
+    }
+</body>
+</html>
