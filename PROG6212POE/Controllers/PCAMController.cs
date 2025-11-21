@@ -16,7 +16,8 @@ namespace PROG6212POE.Controllers
 
         // GET: PCAM/ClaimList
         // Displays all claims for review by Programme Coordinators or Academic Managers
-        public IActionResult PCClaimList(UserModel user)
+        [HttpGet]
+        public IActionResult PCClaimList()
         {
             // Retrieve all claims from the database
             var claims = _context.ClaimModel.ToList();
@@ -28,7 +29,8 @@ namespace PROG6212POE.Controllers
             return View(claims);
         }
 
-        public IActionResult AMClaimList(UserModel user)
+        [HttpGet]
+        public IActionResult AMClaimList()
         {
             // Retrieve all claims from the database
             var claims = _context.ClaimModel.ToList();
@@ -61,7 +63,7 @@ namespace PROG6212POE.Controllers
             }
 
             // Redirect back to the claim list view
-            return RedirectToAction("ClaimList");
+            return RedirectToAction("PCClaimList");
         }
 
         // POST: PCAM/ApproveClaim
@@ -82,13 +84,13 @@ namespace PROG6212POE.Controllers
                 TempData["Success"] = $"Claim #{id} has been approved!";
             }
 
-            return RedirectToAction("ClaimList");
+            return RedirectToAction("AMClaimList");
         }
 
         // POST: PCAM/RejectClaim
         // Used by both Programme Coordinator and Academic Manager to reject a claim
         [HttpPost]
-        public IActionResult RejectClaim(int id)
+        public IActionResult PCRejectClaim(int id)
         {
             var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
 
@@ -103,7 +105,26 @@ namespace PROG6212POE.Controllers
                 TempData["Error"] = $"Claim #{id} has been rejected.";
             }
 
-            return RedirectToAction("ClaimList");
+            return RedirectToAction("PCClaimList");
+        }
+
+        [HttpPost]
+        public IActionResult AMRejectClaim(int id)
+        {
+            var claim = _context.ClaimModel.FirstOrDefault(c => c.ClaimId == id);
+
+            if (claim != null)
+            {
+                // Update claim status to Rejected
+                claim.ClaimStatus = "Rejected";
+
+                _context.SaveChanges();
+
+                // Feedback message
+                TempData["Error"] = $"Claim #{id} has been rejected.";
+            }
+
+            return RedirectToAction("AMClaimList");
         }
     }
 }

@@ -85,7 +85,7 @@ namespace PROG6212POE_Testing
         public async Task LecturerController_SubmitClaim_GET_ReturnsView()
         {
             var controller = new LecturerController(_context);
-            var result = controller.SubmitClaim() as ViewResult;
+            var result = controller.SubmitClaim(controller.GetHttpContext()) as ViewResult;
             Assert.IsNotNull(result);
             Assert.IsInstanceOfType(result.Model, typeof(ClaimModel));
         }

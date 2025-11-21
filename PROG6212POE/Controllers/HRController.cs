@@ -85,6 +85,8 @@ namespace PROG6212POE.Controllers
                 return View(); // Return the login view with the error displayed
             }
 
+            user.UserId = _context.UserModel.ToList().Count + 1;
+
             _context.UserModel.Add(user);
             await _context.SaveChangesAsync();
 

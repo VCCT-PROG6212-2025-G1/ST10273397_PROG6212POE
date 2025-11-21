@@ -8,6 +8,12 @@ namespace PROG6212POE.Models
         [Key]
         public int ClaimId { get; set; }
 
+        [ForeignKey(nameof(UserId))]
+        public int UserId { get; set; }
+
+        [Required]
+        public string UserName { get; set; }
+
         [Required]
         public string Title { get; set; }
 
@@ -30,9 +36,11 @@ namespace PROG6212POE.Models
         public ClaimModel() 
         { }
 
-        public ClaimModel(int id, string title, int hrsWorked, float hrlyRate, string status, string addNotes, string suppDocName, string suppDocPath) 
+        public ClaimModel(int id, int uid, string uname, string title, int hrsWorked, float hrlyRate, string status, string addNotes, string suppDocName, string suppDocPath) 
         { 
-            ClaimId = id; 
+            ClaimId = id;
+            UserId = uid;
+            UserName = uname;
             Title = title;
             HoursWorked = hrsWorked;
             HourlyRate = hrlyRate;

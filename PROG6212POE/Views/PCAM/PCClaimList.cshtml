@@ -6,7 +6,7 @@
 
     // Determine the user's role from ViewBag to display in the heading
     string user;
-    @if (ViewBag.UserRole == @Role.ProgCoord)
+    @if (ViewBag.UserRole == @Role.ProgCoord.ToString())
     {
         user = "Programme Coordinator";
     }
@@ -18,7 +18,7 @@
             <!-- Heading and description -->
             <h2 class="text-primary text-center mb-3 fw-bold">Claims Review Dashboard</h2>
             <p class="text-muted text-center mb-4">
-                As a <strong>@Role.ProgCoord.ToString()</strong>, you can review, verify, and approve or reject lecturer claims below.
+                As a <strong>Programme Coordinator</strong>, you can review, verify, and approve or reject lecturer claims below.
             </p>
 
             <!-- Table container -->
@@ -28,7 +28,7 @@
                         <tr>
                             <th>ID</th>
                             <th>@Html.DisplayNameFor(model => model.Title)</th>
-                            <th>Hours Worked For The Week</th>
+                            <th>Hours Worked For The Month</th>
                             <th>Hourly Rate</th>
                             <th>Total Amount</th>
                             <th>Additional Notes</th>
@@ -82,7 +82,7 @@
                                                 <button type="submit" class="btn btn-success btn-sm px-3">Verify</button>
                                             </form>
                                             <!-- Reject button -->
-                                            <form asp-action="RejectClaim" method="post" class="d-inline">
+                                            <form asp-action="PCRejectClaim" method="post" class="d-inline">
                                                 <input type="hidden" name="id" value="@claim.ClaimId" />
                                                 <button type="submit" class="btn btn-danger btn-sm px-3">Reject</button>
                                             </form>

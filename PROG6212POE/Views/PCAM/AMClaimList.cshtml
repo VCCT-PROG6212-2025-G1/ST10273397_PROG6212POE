@@ -6,7 +6,7 @@
 
     // Determine the user's role from ViewBag to display in the heading
     string user;
-    @if (ViewBag.UserRole == @Role.AcadMan)
+    @if (ViewBag.UserRole == @Role.AcadMan.ToString())
     {
         user = "Academic Manager";
     }
@@ -18,7 +18,7 @@
             <!-- Heading and description -->
             <h2 class="text-primary text-center mb-3 fw-bold">Claims Review Dashboard</h2>
             <p class="text-muted text-center mb-4">
-                As a <strong>@Role.AcadMan.ToString()</strong>, you can review, verify, and approve or reject lecturer claims below.
+                As a <strong>Academic Manager</strong>, you can review, verify, and approve or reject lecturer claims below.
             </p>
 
             <!-- Table container -->
@@ -76,7 +76,7 @@
 
                                 <td>
                                     <!-- Actions column: buttons depend on role and claim status -->
-                                        if (claim.ClaimStatus == "Verified")
+                                        @if (claim.ClaimStatus == "Verified")
                                         {
                                             <div class="btn-group">
                                                 <!-- Approve button -->
@@ -85,7 +85,7 @@
                                                     <button type="submit" class="btn btn-success btn-sm px-3">Approve</button>
                                                 </form>
                                                 <!-- Reject button -->
-                                                <form asp-action="RejectClaim" method="post" class="d-inline">
+                                                <form asp-action="AMRejectClaim" method="post" class="d-inline">
                                                     <input type="hidden" name="id" value="@claim.ClaimId" />
                                                     <button type="submit" class="btn btn-danger btn-sm px-3">Reject</button>
                                                 </form>
