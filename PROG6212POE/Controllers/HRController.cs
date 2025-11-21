@@ -1,27 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PROG6212POE.Data;
 using PROG6212POE.Models;
-using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace PROG6212POE.Controllers
 {
     public class HRController : Controller
     {
-
         private readonly AppDbContext _context;
 
-        //Constructor injects the database context
         public HRController(AppDbContext context)
         {
             _context = context;
         }
 
         [HttpGet]
-        public IActionResult Index(UserModel user)
+        public IActionResult Index()
         {
-            var users = _context.UserModel.ToList(); // Your user data
-            var claims = _context.ClaimModel.ToList(); // Your claims data
+            var users = _context.UserModel.ToList();
+            var claims = _context.ClaimModel.ToList();
             ViewBag.Claims = claims;
             return View(users);
         }
@@ -30,29 +28,40 @@ namespace PROG6212POE.Controllers
         public IActionResult Edit(int userId)
         {
             var user = _context.UserModel.Find(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
             return View(user);
         }
 
         [HttpPost]
         public async Task<IActionResult> Edit(UserModel user)
         {
-
             if (!ModelState.IsValid)
             {
-                return View();
+                return View(user);
             }
 
-            if (user == null)
+            var existingUser = _context.UserModel.Find(user.UserId);
+
+            if (existingUser == null)
             {
-                // Add a general validation error
-                ModelState.AddModelError("", "Please Fill in All Details");
-                return View(); // Return the login view with the error displayed
+                return NotFound();
             }
 
+            existingUser.FirstName = user.FirstName;
+            existingUser.LastName = user.LastName;
+            existingUser.Email = user.Email;
+            existingUser.UserRole = user.UserRole;
+            existingUser.HourlyRate = user.HourlyRate;
 
-            _context.UserModel.Update(user);
+            if (!string.IsNullOrWhiteSpace(user.Password))
+            {
+                existingUser.Password = user.Password;
+            }
+
             await _context.SaveChangesAsync();
-
             return RedirectToAction("Index");
         }
 
@@ -60,6 +69,19 @@ namespace PROG6212POE.Controllers
         public IActionResult Details(int userId)
         {
             var user = _context.UserModel.Find(userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Get all claims for this specific user
+            var userClaims = _context.ClaimModel
+                .Where(c => c.UserId == userId)
+                .ToList();
+
+            ViewBag.Claims = userClaims;
+
             return View(user);
         }
 
@@ -72,24 +94,14 @@ namespace PROG6212POE.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser(UserModel user)
         {
-
             if (!ModelState.IsValid)
             {
-                return View();
-            }
-
-            if (user == null)
-            {
-                // Add a general validation error
-                ModelState.AddModelError("", "Please Fill in All Details");
-                return View(); // Return the login view with the error displayed
+                return View(user);
             }
 
             user.UserId = _context.UserModel.ToList().Count + 1;
-
             _context.UserModel.Add(user);
             await _context.SaveChangesAsync();
-
             return RedirectToAction("Index");
         }
     }

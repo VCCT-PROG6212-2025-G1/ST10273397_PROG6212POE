@@ -30,6 +30,8 @@ namespace PROG6212POE.Models
 
         public string AdditionalNotes { get; set; }
 
+        public DateTime DateSubmitted { get; set; } = DateTime.Now;
+
         public string SuppDocName { get; set; } = ""; // Original file name (for display)
         public string SuppDocPath { get; set; } = ""; // Stored file name on server (for download)
 
