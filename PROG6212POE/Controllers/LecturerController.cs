@@ -121,7 +121,7 @@ namespace PROG6212POE.Controllers
                     return View(claim);
                 }
 
-                // Assign Claim ID (poor man's auto-ID, should be Identity column in DB)
+                // Assign Claim ID
                 claim.ClaimId = _context.ClaimModel.Count() + 1;
                 claim.ClaimStatus = "Pending";
 

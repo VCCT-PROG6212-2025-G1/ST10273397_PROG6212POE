@@ -169,6 +169,7 @@ namespace PROG6212POE.Controllers
                 if (!ModelState.IsValid)
                     return View(user);
 
+                user.UserId = _context.UserModel.ToList().Count + 1;
                 _context.UserModel.Add(user);
                 await _context.SaveChangesAsync();
 
@@ -190,7 +191,7 @@ namespace PROG6212POE.Controllers
             var userRole = HttpContext.Session.GetString("UserRole");
             var currentUserId = HttpContext.Session.GetInt32("UserId");
 
-            if (userRole != null || currentUserId != null)
+            if (userRole != Role.HR.ToString())
             {
                 return RedirectToAction("AccessDenied");
             }
@@ -212,7 +213,7 @@ namespace PROG6212POE.Controllers
                 return File(
                     pdf.BinaryData,
                     "application/pdf",
-                    $"UserReport-{user.FirstName}{user.LastName}-{DateTime.Now:yyyyMMdd}.pdf"
+                    $"UserReport-{user.FirstName}{user.LastName}-{DateTime.Now:ddMMyyyy}.pdf"
                 );
             }
             catch (Exception ex)

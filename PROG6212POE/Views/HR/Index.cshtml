@@ -67,14 +67,8 @@
                                         <td>@item.UserRole</td>
                                         <td>@($"R {item.HourlyRate}")</td>
                                         <td class="text-center">
-                                            <a asp-action="Edit" asp-route-id="@item.UserId" class="text-primary me-2">
-                                                <i class="bi bi-pencil-square"></i> Edit
-                                            </a>
-                                            <a asp-action="Details" asp-route-id="@item.UserId" class="text-info me-2">
+                                            <a asp-action="Details" asp-route-userId="@item.UserId" class="text-info me-2">
                                                 <i class="bi bi-eye-fill"></i> Details
-                                            </a>
-                                            <a asp-action="GenerateReport" asp-route-id="@item.UserId" class="text-success">
-                                                <i class="bi bi-file-earmark-text"></i> Report
                                             </a>
                                         </td>
                                     </tr>
