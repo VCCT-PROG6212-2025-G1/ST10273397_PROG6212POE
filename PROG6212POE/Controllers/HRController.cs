@@ -1,5 +1,4 @@
-﻿// Cleaned and improved HRController with comments and error handling
-using IronPdf;
+﻿using IronPdf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;

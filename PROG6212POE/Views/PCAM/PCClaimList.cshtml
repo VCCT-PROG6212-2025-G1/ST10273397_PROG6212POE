@@ -74,11 +74,13 @@
                                 </td>
 
                                 <td>
+                                    @if (claim.ClaimStatus == "Pending")
+                                    {
                                         <div class="btn-group">
-                                            <!-- Verify button -->
+                                            <!-- Approve button -->
                                             <form asp-action="VerifyClaim" method="post" class="d-inline">
                                                 <input type="hidden" name="id" value="@claim.ClaimId" />
-                                                <button type="submit" class="btn btn-success btn-sm px-3">Verify</button>
+                                                <button type="submit" class="btn btn-success btn-sm px-3">Approve</button>
                                             </form>
                                             <!-- Reject button -->
                                             <form asp-action="PCRejectClaim" method="post" class="d-inline">
@@ -86,6 +88,11 @@
                                                 <button type="submit" class="btn btn-danger btn-sm px-3">Reject</button>
                                             </form>
                                         </div>
+                                    }
+                                    else if (claim.ClaimStatus == "Rejected" || claim.ClaimStatus == "Verified")
+                                    {
+                                        <span class="text-muted fst-italic">No actions available</span>
+                                    }
                                 </td>
                             </tr>
                         }
