@@ -1,4 +1,5 @@
-﻿<!-- Character encoding and viewport settings for responsive design -->
+﻿@using static PROG6212POE.Models.UserModel
+<!-- Character encoding and viewport settings for responsive design -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -72,12 +73,13 @@
 
                 <!-- Role selection -->
                 <div class="form-group mb-4">
-                    <label for="role" class="form-label fw-bold">Select Role</label>
-                    <select id="role" name="Role" class="form-select shadow-sm" required>
+                    <label for="UserRole" class="form-label fw-bold">Select Role</label>
+                    <select id="UserRole" name="UserRole" class="form-select shadow-sm" required>
                         <option value="">-- Choose Role --</option>
-                        <option value="Lecturer">Lecturer</option>
-                        <option value="ProgrammeCoordinator">Programme Coordinator</option>
-                        <option value="AcademicManager">Academic Manager</option>
+                        <option value="@Role.Lecturer">Lecturer</option>
+                        <option value="@Role.ProgCoord">Programme Coordinator</option>
+                        <option value="@Role.AcadMan">Academic Manager</option>
+                        <option value="HR">HR</option>
                     </select>
                     <div class="invalid-feedback">Please select a role.</div>
                 </div>

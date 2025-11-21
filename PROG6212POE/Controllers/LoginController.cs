@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PROG6212POE.Models;
+using static PROG6212POE.Models.UserModel;
 
 public class LoginController : Controller
 {
@@ -14,11 +15,11 @@ public class LoginController : Controller
     // POST: Login
     // Handles login form submission
     [HttpPost]
-    public IActionResult Login(string Username, string Password, string Role)
+    public IActionResult Login(string Username, string Password, string UserRole)
     {
         // Validate all fields: role, username, password
         // Here, the password is hardcoded for testing purposes ("Password123!")
-        if (string.IsNullOrEmpty(Role) ||
+        if (string.IsNullOrEmpty(UserRole) ||
             string.IsNullOrEmpty(Username) ||
             string.IsNullOrEmpty(Password) || Password != "Password123!")
         {
@@ -28,7 +29,7 @@ public class LoginController : Controller
         }
 
         // Check if the user is a Lecturer
-        if (Role == "Lecturer" && Username == "JayDoe")
+        if (UserRole == "Lecturer" && Username == "JayDoe")
         {
             // Set the user role in session for authorization checks later
             HttpContext.Session.SetString("UserRole", "Lecturer");
@@ -37,7 +38,7 @@ public class LoginController : Controller
             return RedirectToAction("Overview", "Lecturer");
         }
         // Check if the user is a Programme Coordinator
-        else if (Role == "ProgrammeCoordinator" && Username == "JaneDoe")
+        else if (UserRole == "ProgrammeCoordinator" && Username == "JaneDoe")
         {
             HttpContext.Session.SetString("UserRole", "ProgrammeCoordinator");
 
@@ -45,16 +46,22 @@ public class LoginController : Controller
             return RedirectToAction("ClaimList", "PCAM");
         }
         // Check if the user is an Academic Manager
-        else if (Role == "AcademicManager" && Username == "JohnDoe")
+        else if (UserRole == "AcademicManager" && Username == "JohnDoe")
         {
             HttpContext.Session.SetString("UserRole", "AcademicManager");
 
             // Redirect to PCAM's Claim List page
             return RedirectToAction("ClaimList", "PCAM");
         }
+        else if (UserRole == "HR" && Username == "JaimeDoe")
+        {
+            HttpContext.Session.SetString("UserRole", "HR");
 
-        // If none of the credentials match, reload login page
-        ModelState.AddModelError("", "Invalid Email and Password");
+            return RedirectToAction("Index", "HR");
+        }
+
+            // If none of the credentials match, reload login page
+            ModelState.AddModelError("", "Invalid Email and Password");
         return RedirectToAction("Login");
     }
 }

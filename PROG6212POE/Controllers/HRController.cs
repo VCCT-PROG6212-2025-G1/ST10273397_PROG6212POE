@@ -20,14 +20,17 @@ namespace PROG6212POE.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            var users = _context.UserModel.ToList();
+            var users = _context.UserModel.ToList(); // Your user data
+            var claims = _context.ClaimModel.ToList(); // Your claims data
+            ViewBag.Claims = claims;
             return View(users);
         }
 
         [HttpGet]
-        public IActionResult Edit()
+        public IActionResult Edit(int userId)
         {
-            return View();
+            var user = _context.UserModel.Find(userId);
+            return View(user);
         }
 
         [HttpPost]
@@ -46,6 +49,7 @@ namespace PROG6212POE.Controllers
                 return View(); // Return the login view with the error displayed
             }
 
+
             _context.UserModel.Update(user);
             await _context.SaveChangesAsync();
 
@@ -53,9 +57,10 @@ namespace PROG6212POE.Controllers
         }
 
         [HttpGet]
-        public IActionResult Details()
+        public IActionResult Details(int userId)
         {
-            return View();
+            var user = _context.UserModel.Find(userId);
+            return View(user);
         }
 
         [HttpGet]
